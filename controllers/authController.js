@@ -5,18 +5,25 @@ const jwt = require('jsonwebtoken')
 exports.register = async (req, res) => {
   const { username, password } = req.body
   try {
+    console.log('Intentando registrar usuario:', username)
     const userExists = await User.findOne({ username })
-    if (userExists) return res.status(400).json({ msg: 'El usuario ya existe' })
+    if (userExists) {
+      console.log('Usuario ya existe:', username)
+      return res.status(400).json({ msg: 'El usuario ya existe' })
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10)
     const newUser = new User({ username, password: hashedPassword })
     await newUser.save()
+    console.log('Usuario registrado con éxito:', username)
 
     res.status(201).json({ msg: 'Usuario registrado correctamente' })
   } catch (err) {
-    res.status(500).json({ msg: 'Error del servidor' })
+    console.error('Error en register:', err)
+    res.status(500).json({ msg: 'Error del servidor', error: err.message })
   }
 }
+
 
 exports.login = async (req, res) => {
   const { username, password } = req.body
@@ -31,6 +38,7 @@ exports.login = async (req, res) => {
 
     res.json({ token, username: user.username })
   } catch (err) {
-    res.status(500).json({ msg: 'Error del servidor' })
-  }
+  console.error('Error en el registro:', err)
+  res.status(500).json({ msg: 'Error del servidor', error: err.message })
+}
 }
